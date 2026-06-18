@@ -3,579 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Clínico - Apple Dark</title>
+    <title>Plataforma de Estudos</title>
     <style>
-        /* Variáveis de Cores - Apple Dark Mode */
         :root {
-            --bg-color: #000000;
-            --card-bg: #1c1c1e;
-            --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
-            --accent-blue: #0a84ff;
-            --accent-green: #30d158;
-            --accent-red: #ff453a;
-            --accent-orange: #ff9f0a;
-            --border-color: #38383a;
-            --btn-bg: #2c2c2e;
-            --btn-hover: #3a3a3c;
+            --bg-color: #f5f5f7;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-main: #1d1d1f;
+            --accent: #0071e3;
+            --accent-hover: #0077ed;
+            --danger: #ff3b30;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            touch-action: manipulation;
-        }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
 
-        /* Container Principal */
-        .container {
-            width: 100%;
-            max-width: 500px;
+        .glass-card {
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 28px;
-            margin-top: 2vh;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid var(--border-color);
-        }
-
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-
-        p.subtitle {
-            color: var(--text-secondary);
-            text-align: center;
-            font-size: 15px;
-            margin-bottom: 24px;
-        }
-
-        .screen { display: none; opacity: 0; transition: opacity 0.4s ease; }
-        .screen.active { display: block; opacity: 1; }
-
-        /* Controles Iniciais */
-        label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            display: block;
-            font-weight: 500;
-        }
-
-        select {
-            width: 100%;
-            padding: 14px 16px;
-            background-color: var(--btn-bg);
-            color: var(--text-primary);
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
             margin-bottom: 20px;
-            outline: none;
-            appearance: none;
         }
 
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--accent-blue);
-            color: #fff;
-            border: none;
-            border-radius: 14px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s ease, background-color 0.2s ease;
+        input, select, button {
+            width: 100%; padding: 14px; margin-bottom: 12px;
+            border-radius: 12px; border: 1px solid #d2d2d7;
+            font-size: 16px; outline: none;
         }
-
-        .btn-primary:active { transform: scale(0.96); }
-        .btn-primary:hover { background-color: #007aff; }
-
-        /* Interface do Quiz */
-        .header-quiz {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
+        
+        button {
+            background-color: var(--accent); color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
+        button:active { transform: scale(0.98); }
+        button.secondary { background-color: #e8e8ed; color: var(--text-main); }
 
-        #question-counter {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-secondary);
+        h1, h2 { font-weight: 600; margin-bottom: 16px; text-align: center; }
+
+        .hidden { display: none; }
+
+        /* Anúncio */
+        .ad-container { display: block; text-align: center; margin: 20px 0; }
+        .ad-banner {
+            width: 100%; border-radius: 12px; animation: pulse 2s infinite; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        .difficulty-badge {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .diff-Fácil { background-color: rgba(48, 209, 88, 0.2); color: var(--accent-green); }
-        .diff-Média { background-color: rgba(255, 159, 10, 0.2); color: var(--accent-orange); }
-        .diff-Difícil { background-color: rgba(255, 69, 58, 0.2); color: var(--accent-red); }
-
-        .question-text {
-            font-size: 20px;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 24px;
-            letter-spacing: -0.3px;
-        }
-
-        .options-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .option-btn {
-            background-color: var(--btn-bg);
-            color: var(--text-primary);
-            border: none;
-            text-align: left;
-            padding: 18px 20px;
-            border-radius: 16px;
-            font-size: 16px;
-            line-height: 1.4;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            cursor: pointer;
-        }
-
-        .option-btn:active { transform: scale(0.98); background-color: var(--btn-hover); }
-
-        /* Apple Style Modal (Glassmorphism) */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-content {
-            background: rgba(30, 30, 30, 0.75);
-            backdrop-filter: saturate(180%) blur(25px);
-            -webkit-backdrop-filter: saturate(180%) blur(25px);
-            width: 90%;
-            max-width: 380px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            overflow: hidden;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            padding: 24px 20px 10px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .modal-title.success { color: var(--accent-green); }
-        .modal-title.error { color: var(--accent-red); }
-
-        .modal-body {
-            padding: 0 20px 24px;
-            font-size: 15px;
-            color: var(--text-primary);
-            line-height: 1.5;
-            text-align: left;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .modal-btn {
-            width: 100%;
-            padding: 18px;
-            background: transparent;
-            border: none;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--accent-blue);
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .modal-btn:active { background: rgba(255, 255, 255, 0.05); }
-
-        /* TELA DE RESULTADO */
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 8px solid var(--accent-blue);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 36px;
-            font-weight: 700;
-            margin: 30px auto;
-        }
+        /* Calculadora de Notas */
+        .grade-row { display: flex; gap: 10px; align-items: center; }
+        .delete-btn { width: 40px; background-color: var(--danger); font-size: 20px; padding: 10px; display: flex; justify-content: center; align-items: center;}
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- TELA INICIAL -->
-        <div id="setup-screen" class="screen active">
-            <h1>Quiz Clínico</h1>
-            <p class="subtitle">100 perguntas disponíveis focadas em Periodontia e especialidades.</p>
-            
-            <div id="resume-container" style="display: none; background: rgba(10, 132, 255, 0.1); padding: 16px; border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(10, 132, 255, 0.3);">
-                <p style="margin-bottom: 12px; font-weight: 600; color: var(--accent-blue); text-align: center;">Sessão em andamento encontrada</p>
-                <button class="btn-primary" onclick="resumeQuiz()" style="background-color: var(--accent-blue);">Continuar Teste</button>
-            </div>
+<div class="container">
+    
+    <a href="https://junim887876.github.io/urban_acai" target="_blank" class="ad-container">
+        <img src="anuncio.jpg" alt="Patrocínio" class="ad-banner">
+    </a>
 
-            <label for="q-count">Número de Perguntas</label>
-            <select id="q-count">
-                <option value="10">10 Perguntas</option>
-                <option value="20">20 Perguntas</option>
-                <option value="30">30 Perguntas</option>
-                <option value="40">40 Perguntas</option>
-                <option value="50">50 Perguntas</option>
-                <option value="100">100 Perguntas</option>
-            </select>
-            <button class="btn-primary" onclick="startNewQuiz()">Iniciar Novo Quiz</button>
+    <div id="login-screen" class="glass-card">
+        <h1>Acesso Rápido</h1>
+        <p style="text-align:center; margin-bottom:20px; color:#86868b;">Digite seu WhatsApp para entrar</p>
+        <input type="tel" id="whatsapp-input" placeholder="Ex: 62999999999" maxlength="11">
+        
+        <div id="register-fields" class="hidden">
+            <input type="text" id="nome-input" placeholder="Seu Nome">
+            <input type="text" id="curso-input" placeholder="Ex: Engenharia Mecânica">
+            <input type="text" id="periodo-input" placeholder="Ex: 5º Período">
         </div>
 
-        <!-- TELA DE PERGUNTAS -->
-        <div id="quiz-screen" class="screen">
-            <div class="header-quiz">
-                <span id="question-counter">1 de 20</span>
-                <span id="difficulty-indicator" class="difficulty-badge">Fácil</span>
-            </div>
-            <div id="question-text" class="question-text">Texto da pergunta</div>
-            <div id="options-container" class="options-grid"></div>
-        </div>
+        <button onclick="handleLogin()" id="btn-login">Entrar</button>
+    </div>
 
-        <!-- TELA DE RESULTADO -->
-        <div id="result-screen" class="screen">
-            <h1>Teste Concluído</h1>
-            <p class="subtitle">Confira seu desempenho final</p>
-            <div class="score-circle" id="final-score">0/0</div>
-            <button class="btn-primary" onclick="resetApp()">Voltar ao Início</button>
+    <div id="dashboard-screen" class="hidden">
+        <div class="glass-card">
+            <h2 id="user-greeting">Olá, Aluno</h2>
+            <p id="user-course-info" style="text-align:center; margin-bottom:20px; font-weight: 500;"></p>
+            <button onclick="openSimulado()">Iniciar Simulado Adaptativo</button>
+            <button class="secondary" onclick="openCalculadora()">Calculadora de Notas</button>
+            <button class="secondary" onclick="openRanking()">Ranking da Turma</button>
         </div>
     </div>
 
-    <!-- APPLE MODAL -->
-    <div id="apple-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div id="modal-title" class="modal-title">Título</div>
+    <div id="calculadora-screen" class="glass-card hidden">
+        <h2>Calculadora de Notas</h2>
+        <input type="number" id="media-minima" placeholder="Média mínima para aprovação (ex: 60)">
+        <input type="text" id="materia-nome" placeholder="Nome da Matéria">
+        
+        <div id="grades-container">
+            <div class="grade-row">
+                <input type="number" class="grade-input" placeholder="Nota Prova">
+                <input type="number" class="grade-input" placeholder="Nota Trabalho">
             </div>
-            <div id="modal-body" class="modal-body">Explicação...</div>
-            <button class="modal-btn" onclick="nextQuestion()">Continuar</button>
+            <div class="grade-row">
+                <input type="number" class="grade-input" placeholder="Nota Caderno">
+                <input type="number" class="grade-input" placeholder="Nota AVA">
+            </div>
         </div>
+        
+        <button onclick="limparNotas()" class="delete-btn">🗑️</button>
+        <button onclick="calcularMedia()">Calcular</button>
+        
+        <h3 id="resultado-notas" style="margin-top:20px; text-align:center;"></h3>
+        <button class="secondary" onclick="voltarDashboard()" style="margin-top:10px;">Voltar</button>
     </div>
 
-    <script>
-        /* =======================================================
-           BANCO DE DADOS - 100 PERGUNTAS
-           Foco extremo nas tabelas: image_1bfac2 e image_1bfae5
-           Formato compactado: d(dificuldade), q(texto), o(opções), a(index certo), e(explicação)
-        ======================================================= */
-        const db = [
-            // --- ESTÁGIOS DA PERIODONTITE (Foco imagem 1) ---
-            {d:"Fácil",q:"No Estágio I da Periodontite, qual a medida exata da Perda de Inserção clínica esperada?",o:["1 a 2 mm","3 a 4 mm","> 5 mm","Nenhuma"],a:0,e:"No Estágio I, a perda de inserção interproximal é leve, de 1 a 2 mm."},
-            {d:"Média",q:"Qual a profundidade de sondagem (PS) máxima esperada e o tipo de perda óssea no Estágio I?",o:["PS ≤ 4 mm, perda óssea horizontal","PS ≤ 5 mm, perda vertical > 3mm","PS ≥ 6 mm, perda horizontal","Nenhuma das anteriores"],a:0,e:"O Estágio I caracteriza-se por PS de 4 ou <4 mm e perda óssea estritamente horizontal."},
-            {d:"Média",q:"Como é classificada a perda óssea radiográfica no Estágio II da periodontite?",o:["Terço coronal < 15%","Terço coronal 15% a 33%","Terço médio da raiz","Terço apical da raiz"],a:1,e:"O Estágio II atinge o terço coronal variando entre 15% a 33% da raiz."},
-            {d:"Fácil",q:"No Estágio II, a perda de inserção clínica é mensurada em quais valores?",o:["1 a 2 mm","3 a 4 mm","> 5 mm","0 mm"],a:1,e:"A perda de inserção no Estágio II é moderada, variando de 3 a 4 mm."},
-            {d:"Difícil",q:"Ao avaliar a perda dentária POR PERIODONTITE, qual a diferença entre os Estágios I e II?",o:["No Estágio I perde-se 1 dente, no II perde-se 2","Nenhuma, ambos não apresentam perda dentária por periodontite","O Estágio II perde até 4 dentes","O Estágio I tem disfunção mastigatória leve"],a:1,e:"Tanto o Estágio I quanto o Estágio II têm como característica comum a AUSÊNCIA de perda dentária decorrente de periodontite."},
-            {d:"Fácil",q:"A partir de qual estágio a perda óssea radiográfica atinge o terço médio ou apical da raiz?",o:["Estágio I","Estágio II","Estágio III e IV","Apenas no IV"],a:2,e:"Tanto o Estágio III quanto o IV apresentam perda óssea estendendo-se para o terço médio ou apical da raiz."},
-            {d:"Média",q:"No Estágio III, a perda de inserção clínica ultrapassa qual limite?",o:["> 2 mm","> 3 mm","> 4 mm","> 5 mm"],a:3,e:"Nos Estágios III e IV, a doença é severa, com perda de inserção clínica sempre > 5mm."},
-            {d:"Difícil",q:"Em relação à perda dentária causada pela periodontite, o que caracteriza o Estágio III?",o:["Perda de 1 a 2 dentes","Perda de 4 ou < 4 dentes","Perda de 5 ou > 5 dentes","Perda de todos os molares"],a:1,e:"A complexidade do Estágio III permite a perda de dentes devido à doença, limitando-se a 'perda de 4 ou <4 dentes'."},
-            {d:"Média",q:"Qual das alternativas abaixo é um critério de complexidade LOCAL que classifica a doença diretamente no Estágio III?",o:["Lesão de furca grau II ou III","PS de 5 mm com perda horizontal","Perda óssea de 15% a 33%","Disfunção mastigatória severa"],a:0,e:"A presença de lesões de furca (Grau II ou III) ou perda óssea vertical > 3mm eleva a classificação para Estágio III."},
-            {d:"Fácil",q:"Qual estágio é o único que abrange uma profundidade de sondagem (PS) de 6 mm ou maior (PS ≥ 6mm)?",o:["Estágio I","Estágio II","Estágios III e IV","Nenhum"],a:2,e:"Bolsas muito profundas, iguais ou superiores a 6 mm, são marcadores de severidade para os Estágios III e IV."},
-            {d:"Média",q:"Qual achado radiográfico localizador separa o Estágio II do Estágio III em relação à direção da perda óssea?",o:["O Estágio II possui perda horizontal, o Estágio III possui perda óssea vertical > 3mm","Não há diferença na direção da perda","Ambos são estritamente verticais","O Estágio II possui defeito grave de crista"],a:0,e:"O Estágio II cursa com perda horizontal; o aparecimento de perda óssea vertical superior a 3 mm muda o quadro para Estágio III."},
-            {d:"Média",q:"Se um paciente perde 5 ou mais dentes (≥ 5) por periodontite, em qual estágio ele obrigatoriamente se encontra?",o:["Estágio I","Estágio II","Estágio III","Estágio IV"],a:3,e:"A perda de 5 dentes ou mais devida à periodontite é um critério exclusivo e determinante do Estágio IV."},
-            {d:"Difícil",q:"Disfunção mastigatória, trauma oclusal grau mobilidade > 2 e mudança de posição dentária (migração patológica) são indicadores de:",o:["Estágio II","Estágio III progressão rápida","Grau C unicamente","Estágio IV"],a:3,e:"Esses são fatores de complexidade extremos que definem o Estágio IV (necessidade de reabilitação complexa)."},
-            {d:"Média",q:"O colapso da mordida (menos de 20 dentes restantes na boca) é um fator de complexidade pertencente a qual estágio?",o:["Estágio I","Estágio II","Estágio III","Estágio IV"],a:3,e:"Ter menos de 20 dentes remanescentes caracteriza um colapso mastigatório atrelado à perda dentária severa do Estágio IV."},
-            {d:"Fácil",q:"Se um paciente tem PS = 5 mm e perda óssea horizontal restrita ao terço coronal (20%), qual o estágio?",o:["Estágio I","Estágio II","Estágio III","Estágio IV"],a:1,e:"Esses são os exatos marcadores de limite do Estágio II (PS até 5mm, perda de 15 a 33% coronal)."},
+</div>
 
-            // --- GRAUS DA PERIODONTITE (Foco imagem 2) ---
-            {d:"Fácil",q:"O Grau da periodontite indica o quê?",o:["Apenas a perda de inserção atual","A taxa de progressão da doença e risco futuro","O número exato de dentes perdidos","Qual antibiótico prescrever"],a:1,e:"O sistema de Graus (A, B, C) é desenhado para avaliar o risco clínico de progressão rápida e resposta ao tratamento."},
-            {d:"Média",q:"Na classificação Grau A (progressão lenta), qual o nível clínico de inserção esperado retrospectivamente em 5 anos?",o:["Nenhuma perda em 5 anos","Perda < 2 mm em 5 anos","Perda > 2 mm em 5 anos","Perda de 5 dentes"],a:0,e:"O Grau A indica doença estável ou de progressão muito lenta, sem nenhuma perda de inserção documentada nos últimos 5 anos."},
-            {d:"Média",q:"Como é o cálculo matemático utilizado para descobrir a % de perda óssea em relação à idade?",o:["Idade dividida pela perda em mm","% da perda óssea radicular dividida pela idade do paciente","Soma das PS dividida por 5 anos","Multiplicação da perda óssea por 100"],a:1,e:"A fórmula é: (Percentual de perda óssea na pior área / Idade do paciente). Isso dá o índice de progressão."},
-            {d:"Fácil",q:"Se o cálculo de % Perda Óssea / Idade resulta em um valor < 0,25, o paciente é classificado em qual grau?",o:["Grau A","Grau B","Grau C","Estágio I"],a:0,e:"Valores menores que 0,25 indicam uma taxa muito lenta de perda óssea, classificando como Grau A."},
-            {d:"Média",q:"Qual o intervalo de % Perda Óssea/Idade que define o Grau B (progressão moderada)?",o:["< 0,25","0,25 a 1,0","> 1,0","> 2,0"],a:1,e:"O Grau B abrange valores matemáticos de taxa de perda situados entre 0,25 e 1,0."},
-            {d:"Média",q:"Valores de % Perda Óssea/Idade superiores a 1,0 (>1,0) caracterizam qual grau da doença?",o:["Grau A","Grau B","Grau C","Nenhum"],a:2,e:"Um índice maior que 1,0 significa que a doença progrediu de forma altamente acelerada em relação à idade (Grau C)."},
-            {d:"Difícil",q:"No critério de FENÓTIPO para Grau B, a relação entre biofilme e destruição tecidual é descrita como:",o:["Destruição desproporcional ao depósito","Depósito de biofilme com baixos níveis de destruição","Depósito proporcional de biofilme e nível de destruição esperado","Ausência de biofilme mas alta destruição"],a:2,e:"No Grau B, a doença se comporta conforme o esperado: há uma resposta de destruição tecidual proporcional aos acúmulos de placa presentes."},
-            {d:"Média",q:"No Grau C, o fenótipo inflamatório do paciente é caracterizado por:",o:["Nenhum acúmulo de biofilme","Destruição muito leve mesmo com muito cálculo","Destruição DESPROPORCIONAL ao depósito de biofilme (progressão rápida)","Boa higiene oral prevenindo 100% a doença"],a:2,e:"O Grau C indica alta suscetibilidade, onde o paciente perde osso de maneira agressiva e desproporcional à pouca quantidade de biofilme presente."},
-            {d:"Média",q:"Segundo os Fenótipos de Risco (tabagismo), como um paciente fumante de 8 cigarros por dia é classificado inicialmente?",o:["Grau A","Grau B","Grau C","Fumantes não são classificados"],a:1,e:"Fumantes de menos de 10 cigarros/dia (<10) se enquadram no Grau B."},
-            {d:"Média",q:"Quantos cigarros por dia classificam automaticamente o paciente como risco máximo (Grau C)?",o:["Qualquer quantidade","Mais de 5 cigarros/dia","Mais de 10 cigarros/dia (>10)","Apenas charutos"],a:2,e:"O limite de corte de risco severo no tabagismo para a nova classificação periodontal é > 10 cigarros ao dia (Grau C)."},
-            {d:"Fácil",q:"Em relação ao diabetes, um paciente NÃO diabético tem seu fator de risco alinhado com qual grau?",o:["Grau A","Grau B","Grau C","Estágio IV"],a:0,e:"A ausência do diabetes (não diabético) é o fator modificador de risco compatível com o Grau A."},
-            {d:"Difícil",q:"Pacientes com Diabetes Mellitus cujo controle glicêmico (HbA1c) for > 7% são classificados em qual grau de risco de progressão?",o:["Grau A","Grau B","Grau C","Estágio III"],a:2,e:"Hemoglobina glicada > 7% demonstra descontrole glicêmico, o que aumenta absurdamente o risco de progressão, configurando Grau C."},
-            {d:"Média",q:"Se um diabético tiver exames controlados com hemoglobina glicada (HbA1c) < 7%, ele pertencerá a qual grau?",o:["Grau A","Grau B","Grau C","Ele não desenvolve periodontite"],a:1,e:"Ter diabetes, porém controlada (< 7%), coloca o paciente em um risco moderado de progressão (Grau B)."},
-            {d:"Média",q:"Qual Grau corresponde a uma perda clínica (nível de inserção) documentada > 2 mm no acompanhamento dos últimos 5 anos?",o:["Grau A","Grau B","Grau C","Estágio I"],a:2,e:"Perdas clínicas que ultrapassam 2 mm num curto espaço de 5 anos são o marcador longitudinal de progressão rápida (Grau C)."},
-            {d:"Fácil",q:"O que significa 'fenótipo de risco' nas tabelas de grau periodontal?",o:["A cor da gengiva do paciente","Os modificadores genéticos/sistêmicos e hábitos (fumo/diabetes) que aceleram a perda óssea","Apenas o alinhamento dentário","Nenhuma alternativa"],a:1,e:"Fenótipo de risco foca no Tabagismo e Diabetes, que impactam diretamente a velocidade de resposta imune e progressão (Graus)."},
+<script>
+    // URL DO SEU GOOGLE APPS SCRIPT (Cole a URL gerada no passo 11 aqui dentro das aspas)
+    const API_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
 
-            // --- CROSS EXAMINATIONS (Estágio x Grau) ---
-            {d:"Difícil",q:"Pode um paciente ser Estágio I e Grau C simultaneamente?",o:["Não, é impossível","Sim, se ele tiver pouca perda inicial, mas fuma >10 cigarros e tem alta suscetibilidade","Sim, mas apenas se perder 5 dentes","Não, Estágio 1 é sempre Grau A"],a:1,e:"Sim. O Estágio afere a gravidade ATUAL (ex: 1-2mm de perda). O Grau afere o RISCO FUTURO. Ele pode estar no início agora (Estágio I), mas progredir rápido no futuro (Grau C)."},
-            {d:"Média",q:"Qual elemento é cruzado com a idade para determinar o grau B via radiografia?",o:["A perda dentária","O cálculo % da perda óssea","A profundidade de sondagem","O nível de inserção exato"],a:1,e:"Na ausência de documentação de 5 anos, usa-se a fórmula '% perda óssea máxima / Idade' para chegar aos limites 0.25 a 1.0 (Grau B)."},
+    let currentUser = {};
 
-            // --- PERIO GERAL & FARMACO ---
-            {d:"Fácil",q:"A técnica de 'Full Mouth Disinfection' visa fazer o debridamento em qual período de tempo?",o:["Em meses espaçados","Entre 24-48 horas","Apenas quando há dor","Em 15 dias"],a:1,e:"A técnica exige o tratamento de RAR (raspagem) de todos os sítios em um intervalo curto de 24 a 48 horas, junto à clorexidina."},
-            {d:"Fácil",q:"Na técnica Full Mouth Disinfection, qual substância é utilizada para bocejo químico?",o:["Água oxigenada 10v","Metronidazol líquido","Clorexidina 0,12%","Solução Fisiológica"],a:2,e:"O Gluconato de Clorexidina 0,12% sem álcool é o padrão-ouro de controle químico neste protocolo."},
-            {d:"Fácil",q:"Qual antibiótico causa 'pigmentação de dentes permanentes e tecidos gengivais' e não deve ser usado por longo prazo?",o:["Amoxicilina","Clindamicina","Tetraciclinas","Metronidazol"],a:2,e:"A Tetraciclina tem como famoso efeito colateral as manchas e pigmentações intrínsecas nos dentes."},
-            {d:"Média",q:"Qual antibiótico gera o 'Efeito Antabuse' (alterações cardíacas e vasculares com álcool) e deixa 'gosto metálico' na boca?",o:["Metronidazol","Azitromicina","Penicilinas","Doxiciclina"],a:0,e:"O Metronidazol reage fortemente com o álcool (Efeito Antabuse) e tem queixa frequente de gosto metálico relatada pelos pacientes."},
-            {d:"Média",q:"Na periodontia, a dose clássica da Amoxicilina 500mg associada ao Clavulanato 125mg é tomada de quantas horas e por quantos dias?",o:["12/12h por 5 dias","8/8h por 7 dias","24/24h por 3 dias","Dose única"],a:1,e:"O portfólio especifica o uso da dosagem de 500+125mg no intervalo estrito de 8/8 horas durante 7 dias."},
-            {d:"Fácil",q:"Qual é a indicação clássica da Clindamicina (300mg ou 600mg) segundo o portfólio?",o:["Para gestantes sempre","Para dor nevrálgica","2ª opção e pacientes alérgicos à Penicilina","Para clareamento dental"],a:2,e:"Clindamicina é o substituto principal para pacientes que possuem alergia a Penicilinas (Amoxicilina)."},
-            {d:"Difícil",q:"Diarreia e colite pseudomembranosa são efeitos colaterais relatados no uso de qual medicação odontológica?",o:["Doxiciclina","Clindamicina","Clorexidina tópica","Amoxicilina pura"],a:1,e:"A Clindamicina tem forte relação com alterações na flora intestinal, podendo causar colite."},
-            {d:"Fácil",q:"O que caracteriza visualmente a Gengivite Necrosante na boca do paciente?",o:["Retração indolor da margem","Ausência de papila sem dor","Necrose na papila com formação de pseudomembrana cinza-amarelada","Crescimento gengival excessivo rosa pálido"],a:2,e:"Doenças necrosantes cursam com necrose papilar dolorosa, sangramento e camada de pseudomembrana branca/cinza."},
-            {d:"Média",q:"O limite de avanço da necrose é o que diferencia as doenças necrosantes. A ESTOMATITE necrosante chega a que nível?",o:["Apenas papila interdental","Vai além da junção mucogengival, atingindo palato, mucosa jugal, lábios","Até a linha mucogengival máxima, apenas no osso","É sistêmica no pulmão"],a:1,e:"Enquanto a periodontite para na linha mucogengival, a estomatite necrosante atravessa esse limite e necrotiza tecidos adjacentes moles (palato, língua)."},
-            {d:"Fácil",q:"No manejo da fase aguda da Gengivite Necrosante, o que deve ser evitado inicialmente?",o:["Bochechos com clorexidina","Escovação mecânica agressiva (substituir por agentes químicos)","Uso de ultrassom","Debridamento leve"],a:1,e:"O paciente tem dor extrema; substitui-se temporariamente a escovação por controle químico e faz-se debridamento suave."},
+    function handleLogin() {
+        const zap = document.getElementById('whatsapp-input').value;
+        const registerFields = document.getElementById('register-fields');
+        const btn = document.getElementById('btn-login');
 
-            // --- ABCESSOS ---
-            {d:"Fácil",q:"Qual abscesso NÃO está primariamente relacionado a uma bolsa periodontal pré-existente e sim a corpos estranhos ou hábitos?",o:["Abscesso periodontal crônico","Abscesso gengival não relacionado à periodontite","Abscesso perirradicular","Granuloma apical"],a:1,e:"Abscessos não relacionados a periodontite ocorrem por impactação de pipoca, corpo estranho ou trauma ortodôntico, sem perda óssea periodontal prévia profunda."},
-            {d:"Fácil",q:"O Abscesso Perirradicular Agudo tem origem em qual estrutura?",o:["Cálculo supra-gengival","Resto alimentar na gengiva","Necrose da Polpa Dental e bactérias que passam o forame","No cimento resinoso"],a:2,e:"Ele é a evolução da necrose pulpar, onde a infecção vaza do interior da raiz para o osso periapical."},
-            {d:"Média",q:"No Abscesso Perirradicular Agudo, o que se espera no teste de vitalidade pulpar e percussão?",o:["Vitalidade +, Percussão -","Vitalidade -, Percussão +","Ambos positivos","Ambos negativos"],a:1,e:"Por haver necrose, a vitalidade pulpar (frio) é negativa; pelo edema e pus no ápice, a percussão é dolorosa (positiva)."},
-            {d:"Média",q:"Na Periodontite Apical Crônica, qual o padrão sintomatológico?",o:["Dói intensamente à noite","Sensação de dente crescido insuportável","Assintomática, com área radiolúcida no ápice e ausência de dor aos testes","Bolsa periodontal purulenta na margem"],a:2,e:"A fase crônica tenta isolar a infecção formando um granuloma apicamente. O dente não apresenta dor aos testes clínicos."},
+        if(zap.length < 10) return alert("Digite um WhatsApp válido.");
 
-            // --- DENTÍSTICA & MATERIAIS ---
-            {d:"Fácil",q:"Qual é a Classe V na classificação de preparos e lesões de Black?",o:["Cervical de todos os dentes","Oclusal de posteriores","Proximal de posteriores","Incisais"],a:0,e:"A Classe V compreende as cáries e desgastes que ocorrem no terço cervical (pescoço) das faces vestibulares ou linguais de todos os dentes."},
-            {d:"Fácil",q:"Cáries nas faces proximais de dentes anteriores que NÃO envolvem o ângulo incisal correspondem a:",o:["Classe II","Classe III","Classe IV","Classe I"],a:1,e:"Esta é a clássica Classe III de Black (proximais de anteriores sem envolver a borda). Envolver a incisal seria Classe IV."},
-            {d:"Fácil",q:"O grampo 212 no isolamento absoluto é desenhado principalmente para quais dentes?",o:["Molares parcialmente erupcionados","Pré-molares volumosos","Anteriores com pouca retenção, retraindo gengiva","Molares com destruição coronária"],a:2,e:"O 212 tem arcos em forma de asa de borboleta duplas voltadas para estabilizar no colo de dentes anteriores, retraindo bem o tecido e isolando a cervical."},
-            {d:"Fácil",q:"Qual o tempo recomendado de aplicação de Ácido Fosfórico 37% na Dentina?",o:["30 segundos","15 segundos","1 minuto","60 segundos"],a:1,e:"Na Dentina, o tempo é mais curto (15s) para não causar desmineralização excessiva das fibras de colágeno. No esmalte, usa-se 30s."},
-            {d:"Média",q:"Qual é o agente responsável por unir quimicamente a Matriz Orgânica (resina) às Partículas Inorgânicas (carga)?",o:["Bis-GMA","Ácido Fosfórico","Silano","Primer"],a:2,e:"O agente de união Silano atua como a 'ponte' química impedindo que as partículas de carga soltem da matriz polimérica."},
-            {d:"Média",q:"Na classificação de resinas, as Nanohíbridas possuem quais vantagens principais?",o:["Superfície rugosa com alta resistência","Acabamento ruim para focar em uso posterior","Boa resistência, alta estética, alto polimento, para anteriores e posteriores","Altíssima taxa de contração orgânica"],a:2,e:"Elas misturam os benefícios mecânicos das microcargas com a estética superior e polimento duradouro das nanopartículas."},
-            {d:"Média",q:"Qual material capeador é inserido DIRETAMENTE sobre uma exposição pulpar no passo a passo de Dentística?",o:["Ionômero de Vidro R","Hidróxido de Cálcio Pasta-Pasta","Hidróxido de Cálcio P.A. (pó)","Resina Bulk-Fill"],a:2,e:"Em exposições diretas sangrantes, utiliza-se o pó puro estéril de Hidróxido de Cálcio (P.A.), seguido pelo forramento."},
-            {d:"Fácil",q:"A Dentina possui qual composição tecidual que dificulta a adesão?",o:["96% de mineral sem água","70% mineral, 20% colágeno e 10% de água","100% cálcio","1% de colágeno apenas"],a:1,e:"Esses 10% de água e 20% de matéria orgânica (colágeno) tornam o tecido úmido, exigindo sistemas adesivos com primers hidrofílicos."},
-            {d:"Média",q:"O que é a 'Camada Híbrida' na adesão dentinária?",o:["É o pó de osso deixado pela broca","É o colágeno exposto e não infiltrado","A união da rede de colágeno desmineralizado infiltrada por monômeros resinosos (Primer+Adesivo)","A placa bacteriana residual"],a:2,e:"É a zona de interdifusão; a verdadeira responsável pela adesão micromecânica duradoura na dentina."},
-            {d:"Fácil",q:"Sistemas adesivos convencionais de '3 passos' exigem quais etapas isoladas na ordem?",o:["Acido > Lavar > Primer + Adesivo misturados","Acido > Primer > Adesivo em frascos separados","Primer > Acido > Adesivo","Adesivo > Ácido > Primer"],a:1,e:"Os 3 passos puros são compostos pelo uso sequencial do Ácido, seguido do Primer, seguido do Adesivo (Bond)."},
+        btn.innerText = "Carregando...";
 
-            // --- ENDODONTIA ---
-            {d:"Fácil",q:"Dor aguda, desencadeada pelo frio e doce, mas que PASSA RAPIDAMENTE assim que removemos o estímulo caracteriza:",o:["Polpa Normal","Pulpite Reversível","Pulpite Irreversível Sintomática","Necrose Pulpar"],a:1,e:"O sumiço rápido da dor sinaliza que o dano tecidual inflamatório da polpa ainda possui capacidade de reparo se a cárie for removida."},
-            {d:"Média",q:"Paciente acorda no meio da noite com dor no dente, forte, pulsante e espontânea (sem estímulos). Diagnóstico provável?",o:["Pulpite Reversível","Pulpite Irreversível Sintomática","Polpa Normal","Abscesso periodontal agudo"],a:1,e:"A dor espontânea e llatejante, que irradia e desperta o paciente, é o sintoma álgico clássico de uma pulpite irreversível sintomática."},
-            {d:"Fácil",q:"A terceira lima (número 25) da primeira série endodôntica clássica possui o cabo de qual cor?",o:["Branco","Amarelo","Vermelho","Azul"],a:2,e:"A ordem da primeira série é: 15-Branco, 20-Amarelo, 25-Vermelho, 30-Azul, 35-Verde, 40-Preto."},
-            {d:"Média",q:"Dentes com 3 raízes (como molares superiores) pedem um formato de abertura endodôntica (acesso) de que tipo?",o:["Circular","Ovoide","Trapezoidal ou Triangular","Losango estrito"],a:2,e:"Para englobar os três canais (MV, DV e Palatino), a broca desenha no teto cameral um triângulo ou trapézio."},
-            {d:"Média",q:"O que é a 'Sensação de dente crescido' frequentemente relatada na Periodontite Apical Aguda?",o:["O dente de fato cria mais esmalte","A inflamação e edema no ligamento periapical empurram o dente levemente para fora do alvéolo","O cemento radicular se solta","A polpa infla a coroa"],a:1,e:"A liberação de toxinas causa vasodilatação, exsudato e edema na região do ápice (L.P.), criando leve extrusão do dente e dor à mordida."},
-
-            // --- CIRURGIA EXODONTIA ---
-            {d:"Fácil",q:"Qual fórceps utilizamos idealmente para extrair dentes anteriores superiores?",o:["Fórceps 151","Fórceps 150","Fórceps 17","Fórceps 69"],a:1,e:"O 150 tem o bico adaptado à curvatura da maxila para apreender dentes anteriores e pré-molares superiores."},
-            {d:"Fácil",q:"Para remover raízes residuais deixadas presas ao osso no alvéolo, a escolha clássica do fórceps universal com bicos finos é:",o:["16","18R","17","69"],a:3,e:"O Fórceps 69 possui lâminas delgadas, longas e unidas para entrar fundo no alvéolo e pinçar raízes."},
-            {d:"Fácil",q:"Qual Fórceps é próprio para molares superiores do lado DIREITO?",o:["18L","18R","16","150"],a:1,e:"O 18R (Right) possui um bico com 'chifre' para engatar na bifurcação vestibular do molar direito superior."},
-            {d:"Média",q:"Dentre as lâminas de bisturi, qual é mais recomendada para incisões intracreviculares delicadas ao redor do colo do dente?",o:["10","12","15","11"],a:2,e:"A Lâmina 15 é curva, pequena e a mais versátil para incisões finas intrassulculares nos tecidos moles odontológicos."},
-            {d:"Média",q:"Qual das pinças abaixo possui desenho anatômico para estabilizar o tecido mole durante a sutura na região POSTERIOR?",o:["Pinça Adson","Pinça Backhaus","Pinça Allis","Pinça Dietrich"],a:3,e:"A Dietrich tem uma angulação e serrilha que conferem precisão para segurar o tecido gengival nos fundos vestibulares posteriores."},
-            {d:"Fácil",q:"O retalho cirúrgico Trapezoidal se diferencia por conter quantas incisões relaxantes verticais/oblíquas?",o:["Nenhuma, é só sulcular","Uma incisão relaxante","Duas incisões relaxantes","Incisão reta contínua pelo palato"],a:2,e:"O formato de trapézio é obtido ao se realizar duas incisões relaxantes divergentes nas extremidades do retalho."},
-            {d:"Fácil",q:"Qual instrumento serve especificamente para 'romper o ligamento periodontal' delicadamente na luxação inicial?",o:["Alveolótomo","Periótomo","Cureta de Lucas","Fórceps 17"],a:1,e:"O Periótomo é uma lâmina afilada criada para adentrar o espaço periodontal e soltar a raiz do osso antes dos extratores."},
-
-            // --- RADIOLOGIA & MISC ---
-            {d:"Média",q:"Na radiografia panorâmica, qual estrutura apresenta um caminho radiolúcido delineado por linhas radiopacas correndo dentro do corpo da mandíbula?",o:["Seio Maxilar","Canal Mandibular","Processo Zigomático","Forame incisivo"],a:1,e:"O Canal Mandibular abriga o feixe nervoso alveolar inferior e é claramente visível na radiografia dos molares inferiores para trás."},
-            {d:"Fácil",q:"Ao realizar a técnica Periapical no lado ESQUERDO para DENTES POSTERIORES, a posição do filme no posicionador geralmente é associada com os:",o:["Anteriores apenas","Superiores esquerdos cruzados com incisivos","Posteriores superiores esquerdos e inferiores direitos","Superiores molares em oclusão"],a:2,e:"A montagem do anel posicionador posterior funciona em padrão cruzado: Superior Esquerdo cruza com Inferior Direito."},
-            {d:"Média",q:"Quais radiografias compõem a técnica Interproximal (Bite-Wing)?",o:["Anteriores e raízes no periapice","Apenas coroas dos posteriores direito e esquerdo simultaneamente no plano de mordida","Apenas as coroas dos incisivos centrais","Todo o perfil do crânio"],a:1,e:"A Bite-wing captura as coroas superiores e inferiores num mesmo filme para detectar cáries proximais dos dentes posteriores."},
-
-            // Pumping questions dynamically based on permutations to reach 100 solid facts
-            {d:"Média",q:"Na classificação de resinas, o que define as de 'Micropartículas' (0,01 a 0,1 µm)?",o:["Acabamento ruim e muito desgaste","Excelente polimento e estética em dentes anteriores, porém menor resistência mecânica","Resistência altíssima a impactos para molares","É feita de Zircônia maciça"],a:1,e:"Microparticuladas são excepcionais no brilho duradouro em facetas e dentes da frente, mas quebram sob força mastigatória forte nas oclusais."},
-            {d:"Difícil",q:"No processo inflamatório do abscesso apical agudo, o tecido morto, bactérias e defesa morta do corpo formam:",o:["Polímero resinoso","Pus (exsudato purulento inflamatório)","Tártaro subgengival cristalizado","Dentina esclerosada reparadora"],a:1,e:"A morte maciça de neutrófilos, misturados com detritos e bactérias necróticas que romperam o forame formam a loja purulenta aguda."},
-            {d:"Fácil",q:"Uma cavidade com exposição pulpar muito profunda e dolorida, sem sangramento vermelho vivo (polpa arroxeada/seca). É indicado capeamento direto conservador?",o:["Sim, sempre aplicar Ionômero","Não, indício forte de necrose/pulpite irreversível. Pede Endodontia.","Sim, com Resina Macroparticulada","Aplicar flúor apenas"],a:1,e:"Se a polpa já mostra sinais de necrose e o sangramento é inerte ou pútrido, capeamentos diretos falharão, resultando em abscesso e dor."}
-        ];
-
-        // --- Expansão Inteligente até 100 perguntas com permutações contextuais (caso DB < 100) ---
-        function generateCompleteDB(baseDB) {
-            let expanded = JSON.parse(JSON.stringify(baseDB));
-            let i = 0;
-            // Para completar 100 de forma controlada demonstrativa
-            while (expanded.length < 100) {
-                let template = baseDB[i % baseDB.length];
-                expanded.push({
-                    d: template.d,
-                    q: template.q + " (Revisão #" + expanded.length + ")",
-                    o: template.o,
-                    a: template.a,
-                    e: template.e
-                });
-                i++;
-            }
-            return expanded;
-        }
-
-        const fullDB = generateCompleteDB(db);
-        let quizState = { activeQuestions: [], currentIndex: 0, score: 0, total: 0 };
-
-        // Inicialização e Sistema de Salvamento
-        window.onload = () => {
-            const savedState = localStorage.getItem('apple_quiz_state');
-            if (savedState) {
-                const parsed = JSON.parse(savedState);
-                if (parsed.currentIndex < parsed.total) {
-                    document.getElementById('resume-container').style.display = 'block';
-                }
-            }
-        };
-
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => {
-                s.classList.remove('active');
-            });
-            setTimeout(() => {
-                document.getElementById(screenId).classList.add('active');
-            }, 50); // delay para animação de opacidade do css
-        }
-
-        function startNewQuiz() {
-            let count = parseInt(document.getElementById('q-count').value);
-            count = Math.min(count, fullDB.length);
-
-            const shuffledBank = shuffle(JSON.parse(JSON.stringify(fullDB)));
-            quizState.activeQuestions = shuffledBank.slice(0, count);
-            quizState.currentIndex = 0;
-            quizState.score = 0;
-            quizState.total = count;
+        // Se os campos de registro estão visíveis, fazemos o cadastro
+        if (!registerFields.classList.contains('hidden')) {
+            currentUser = {
+                whatsapp: zap,
+                nome: document.getElementById('nome-input').value,
+                curso: document.getElementById('curso-input').value,
+                periodo: document.getElementById('periodo-input').value
+            };
             
-            saveState();
-            switchScreen('quiz-screen');
-            renderQuestion();
+            fetch(`${API_URL}?action=register&whatsapp=${zap}&nome=${currentUser.nome}&curso=${currentUser.curso}&periodo=${currentUser.periodo}`, { method: 'POST' })
+            .then(() => loadDashboard());
+            return;
         }
 
-        function resumeQuiz() {
-            quizState = JSON.parse(localStorage.getItem('apple_quiz_state'));
-            switchScreen('quiz-screen');
-            renderQuestion();
-        }
-
-        function saveState() {
-            localStorage.setItem('apple_quiz_state', JSON.stringify(quizState));
-        }
-
-        function renderQuestion() {
-            if (quizState.currentIndex >= quizState.total) {
-                endQuiz();
-                return;
-            }
-
-            const q = quizState.activeQuestions[quizState.currentIndex];
-            
-            document.getElementById('question-counter').innerText = `Pergunta ${quizState.currentIndex + 1} de ${quizState.total}`;
-            
-            const diffIndicator = document.getElementById('difficulty-indicator');
-            diffIndicator.innerText = q.d;
-            diffIndicator.className = `difficulty-badge diff-${q.d}`;
-
-            // Remove a tag "(Revisão #x)" visualmente para ficar mais clean
-            let cleanText = q.q.split(" (Revisão")[0];
-            document.getElementById('question-text').innerText = cleanText;
-
-            const optsContainer = document.getElementById('options-container');
-            optsContainer.innerHTML = ''; 
-
-            // Crio array de opções indexadas para misturar mas não perder o certo
-            let optArray = q.o.map((txt, index) => ({ txt, isCorrect: index === q.a }));
-            optArray = shuffle(optArray);
-
-            optArray.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt.txt;
-                // Animação de click tátil style iOS
-                btn.onclick = () => {
-                    btn.style.transform = 'scale(0.95)';
-                    setTimeout(() => handleAnswer(opt, q, optArray), 150);
-                };
-                optsContainer.appendChild(btn);
-            });
-        }
-
-        function handleAnswer(selectedOpt, questionObj, allOptsContext) {
-            const modal = document.getElementById('apple-modal');
-            const mTitle = document.getElementById('modal-title');
-            const mBody = document.getElementById('modal-body');
-
-            const correctOptText = allOptsContext.find(o => o.isCorrect).txt;
-
-            if (selectedOpt.isCorrect) {
-                quizState.score++;
-                mTitle.innerText = "Resposta Correta";
-                mTitle.className = "modal-title success";
-                mBody.innerHTML = `<strong>Fantástico!</strong><br><br>${questionObj.e}`;
+        // Tenta fazer o login
+        fetch(`${API_URL}?action=login&whatsapp=${zap}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === "success") {
+                currentUser = data;
+                loadDashboard();
             } else {
-                mTitle.innerText = "Incorreto";
-                mTitle.className = "modal-title error";
-                mBody.innerHTML = `
-                    <span style="color:var(--accent-red)"><strong>Sua resposta:</strong> ${selectedOpt.txt}</span><br><br>
-                    <span style="color:var(--accent-green)"><strong>O correto era:</strong> ${correctOptText}</span><br><br>
-                    <strong>Por quê?</strong><br>${questionObj.e}
-                `;
+                // Usuário não encontrado, mostra campos para cadastro
+                registerFields.classList.remove('hidden');
+                btn.innerText = "Finalizar Cadastro";
+                alert("Número não encontrado. Complete seu cadastro rápido.");
             }
+        }).catch(() => {
+            btn.innerText = "Entrar";
+            alert("Erro de conexão. Verifique o link do Apps Script.");
+        });
+    }
 
-            modal.classList.add('active');
-            saveState();
+    function loadDashboard() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard-screen').classList.remove('hidden');
+        document.getElementById('user-greeting').innerText = `Olá, ${currentUser.nome}`;
+        document.getElementById('user-course-info').innerText = `${currentUser.curso} - ${currentUser.periodo}`;
+    }
+
+    function openCalculadora() {
+        document.getElementById('dashboard-screen').classList.add('hidden');
+        document.getElementById('calculadora-screen').classList.remove('hidden');
+    }
+
+    function voltarDashboard() {
+        document.getElementById('calculadora-screen').classList.add('hidden');
+        document.getElementById('dashboard-screen').classList.remove('hidden');
+    }
+
+    function limparNotas() {
+        document.querySelectorAll('.grade-input').forEach(input => input.value = '');
+        document.getElementById('resultado-notas').innerText = '';
+    }
+
+    function calcularMedia() {
+        const mediaMinima = parseFloat(document.getElementById('media-minima').value);
+        let soma = 0;
+        document.querySelectorAll('.grade-input').forEach(input => {
+            if(input.value) soma += parseFloat(input.value);
+        });
+
+        const resultadoMsg = document.getElementById('resultado-notas');
+        if (isNaN(mediaMinima)) return alert("Defina a média mínima!");
+
+        if (soma >= mediaMinima) {
+            resultadoMsg.innerHTML = `<span style="color: #34c759;">Aprovado! Você conseguiu ${soma} pontos.</span>`;
+        } else {
+            const falta = (mediaMinima - soma).toFixed(1);
+            resultadoMsg.innerHTML = `<span style="color: var(--danger);">Faltam ${falta} pontos para atingir a média. Total atual: ${soma}</span>`;
         }
+    }
 
-        function nextQuestion() {
-            document.getElementById('apple-modal').classList.remove('active');
-            // Pequeno delay pra animação de saída do modal
-            setTimeout(() => {
-                quizState.currentIndex++;
-                saveState();
-                renderQuestion();
-            }, 300);
-        }
+    function openSimulado() {
+        alert("O algoritmo adaptativo analisará seus erros anteriores armazenados no Cache local do navegador e puxará do Google Sheets as questões que você tem mais dificuldade.");
+        // A lógica do simulado seria instanciada aqui.
+    }
+    
+    function openRanking() {
+        alert(`Buscando ranking dos alunos do ${currentUser.periodo} de ${currentUser.curso}...`);
+    }
+</script>
 
-        function endQuiz() {
-            switchScreen('result-screen');
-            document.getElementById('final-score').innerText = `${quizState.score}/${quizState.total}`;
-            
-            // Coloração do circulo dependendo da nota
-            let pct = quizState.score / quizState.total;
-            let circle = document.getElementById('final-score');
-            if(pct >= 0.7) circle.style.borderColor = "var(--accent-green)";
-            else if(pct >= 0.5) circle.style.borderColor = "var(--accent-orange)";
-            else circle.style.borderColor = "var(--accent-red)";
-
-            localStorage.removeItem('apple_quiz_state'); 
-        }
-
-        function resetApp() {
-            document.getElementById('resume-container').style.display = 'none';
-            switchScreen('setup-screen');
-        }
-    </script>
 </body>
 </html>
