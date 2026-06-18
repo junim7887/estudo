@@ -3,319 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Plataforma de Estudos</title>
+    <title>Plataforma Acadêmica</title>
     <style>
+        /* --- TEMA JOVEM (DARK SPACE & ESTRELAS) --- */
         :root {
-            --bg-color: #f5f5f7;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --text-main: #1d1d1f;
-            --accent: #0071e3;
-            --accent-hover: #0077ed;
-            --danger: #ff3b30;
-            --success: #34c759;
+            --bg-card: rgba(20, 20, 30, 0.6);
+            --bg-input: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a6;
+            --accent: #0a84ff; 
+            --accent-hover: #006ee6;
+            --border: rgba(255, 255, 255, 0.15);
+            --glass: blur(16px) saturate(180%);
+            --success: #32d74b;
+            --danger: #ff453a;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
         
-        body { background-color: var(--bg-color); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+        body { 
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            color: var(--text-primary); 
+            padding-top: 70px; padding-bottom: 80px; 
+            overflow-x: hidden; min-height: 100vh;
+        }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+        /* --- ANIMAÇÃO DAS ESTRELAS (CSS PURO) --- */
+        #stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: moveStar linear infinite; opacity: 0;
+        }
+        @keyframes moveStar {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+        }
+        /* Efeito de velocidade (Warp Speed) quando entra no simulado */
+        body.warp-speed .star { animation-duration: 2s !important; border-radius: 0; width: 2px !important; height: 30px !important; }
 
+        /* --- ESTRUTURA GERAL --- */
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; width: 100%; position: relative; z-index: 10; }
+        .app-view { display: none; opacity: 0; transition: opacity 0.3s; }
+        .app-view.active { display: block; opacity: 1; animation: slideUp 0.4s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- ANÚNCIO PREMIUM --- */
+        .ad-header {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .ad-anchor {
+            display: block; width: 85%; max-width: 400px; height: 45px; border-radius: 10px; overflow: hidden;
+            border: 1px solid rgba(255, 185, 0, 0.5); box-shadow: 0 0 10px rgba(255, 185, 0, 0.2);
+            animation: pulseAd 2s infinite ease-in-out;
+        }
+        .ad-banner-img { width: 100%; height: 100%; object-fit: cover; }
+        @keyframes pulseAd { 0%, 100% { box-shadow: 0 0 5px rgba(255,185,0,0.2); } 50% { box-shadow: 0 0 15px rgba(255,185,0,0.6); } }
+
+        /* --- GLASS CARDS & FORMS --- */
         .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-            margin-bottom: 16px;
+            background: var(--bg-card); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+            border-radius: 18px; padding: 24px; border: 1px solid var(--border); margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
+        .section-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #fff; text-align: center; }
+        .sub-title { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; text-align: center; line-height: 1.4; }
 
-        input, select, button, textarea {
-            width: 100%; padding: 14px; margin-bottom: 12px;
-            border-radius: 12px; border: 1px solid #d2d2d7;
-            font-size: 16px; outline: none; background: #fff;
+        input, select, textarea {
+            width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 12px;
+            border: 1px solid var(--border); font-size: 16px; background-color: var(--bg-input); 
+            color: #fff; outline: none; transition: 0.2s;
         }
+        input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.5); }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); background-color: rgba(255,255,255,0.15); }
+        textarea { height: 90px; resize: none; }
 
-        textarea { height: 80px; resize: none; }
-        
         button {
-            background-color: var(--accent); color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;
+            width: 100%; padding: 16px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; 
+            cursor: pointer; transition: 0.2s; color: white; background-color: var(--accent);
         }
-        button:aria-disabled, button:disabled { background-color: #a2a2a7; cursor: not-allowed; }
-        button:active:not(:disabled) { transform: scale(0.98); }
-        button.secondary { background-color: #e8e8ed; color: var(--text-main); }
+        button:active { transform: scale(0.96); }
+        .btn-secondary { background-color: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; margin-top: 8px;}
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        h1, h2, h3 { font-weight: 600; margin-bottom: 16px; text-align: center; }
+        /* --- ABAS / NAVEGAÇÃO --- */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: rgba(10, 10, 15, 0.8); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
+            border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+        }
+        .tab-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-secondary); text-decoration: none; font-size: 11px; font-weight: 600; width: 25%; transition: 0.2s;
+        }
+        .tab-item.active { color: var(--accent); transform: translateY(-2px); }
+        .tab-icon { font-size: 22px; margin-bottom: 4px; }
+
+        /* --- ESPECÍFICOS --- */
+        /* Login Force Hide */
+        #view-login { display: flex; flex-direction: column; justify-content: center; min-height: 75vh; }
+        
+        /* Boletim */
+        .grade-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;}
+        .grade-row input { flex: 1 calc(50% - 4px); margin-bottom: 0;}
+        .materia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .total-badge { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: bold;}
+        .delete-btn { width: auto; padding: 8px 12px; background: rgba(255, 69, 58, 0.2); border: 1px solid var(--danger); border-radius: 8px; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+        /* Simulado */
+        .opt-btn { background: var(--bg-input); border: 1px solid var(--border); text-align: left; margin-bottom: 8px; font-weight: 500; }
+        .opt-btn.correct { background-color: var(--success); border-color: var(--success); }
+        .opt-btn.wrong { background-color: var(--danger); border-color: var(--danger); }
+        .q-meta { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700;}
+        .q-text { font-size: 18px; line-height: 1.4; margin-bottom: 20px; }
 
         .hidden { display: none !important; }
-
-        /* Banner Rotativo / Piscante */
-        .ad-container { display: block; text-align: center; margin-bottom: 16px; }
-        .ad-banner {
-            width: 100%; border-radius: 14px; animation: blink-animation 1.5s infinite; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        @keyframes blink-animation { 0% { opacity: 1; } 50% { opacity: 0.75; } 100% { opacity: 1; } }
-
-        /* Grid de Notas */
-        .grade-row { display: flex; gap: 10px; }
-        .delete-btn { background-color: var(--danger); font-size: 18px; padding: 12px; width: fit-content; margin: 0 auto 12px auto; display: block; border-radius: 50%; }
-
-        .counter-badge {
-            background: #e8e8ed; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 16px;
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    
-    <a href="https://junim887876.github.io/urban_acai" target="_blank" class="ad-container">
-        <img src="anuncio.jpg" alt="Anúncio" class="ad-banner">
-    </a>
+    <div id="stars-container"></div>
 
-    <div id="screen-login" class="glass-card">
-        <h1>Acesso Rápido</h1>
-        <p style="text-align:center; margin-bottom:20px; color:#86868b;">Informe seu WhatsApp para entrar no seu ambiente de curso</p>
-        <input type="tel" id="input-whatsapp" placeholder="WhatsApp (Ex: 62999999999)" maxlength="11">
-        
-        <div id="fields-registration" class="hidden">
-            <input type="text" id="input-nome" placeholder="Seu Nome Completo">
-            <input type="text" id="input-curso" placeholder="Nome do Curso (Ex: Engenharia Mecânica)">
-            <input type="text" id="input-periodo" placeholder="Período Atual (Ex: 5º Período)">
+    <header class="ad-header">
+        <a href="https://junim887876.github.io/urban_acai" target="_blank" class="ad-anchor">
+            <img src="anuncio.jpg" alt="Apoio" class="ad-banner-img">
+        </a>
+    </header>
+
+    <main class="container">
+
+        <div id="view-login" class="app-view active">
+            <div class="glass-card">
+                <h1 class="section-title">Acesso ao Hub</h1>
+                <p class="sub-title">Sincronize com o banco de dados na nuvem informando seu WhatsApp.</p>
+                
+                <input type="tel" id="login-whatsapp" placeholder="Ex: 62999999999" maxlength="11">
+                
+                <div id="register-fields" class="hidden">
+                    <input type="text" id="reg-nome" placeholder="Seu Nome">
+                    <input type="text" id="reg-curso" placeholder="Seu Curso (ex: Engenharia)">
+                    <input type="text" id="reg-periodo" placeholder="Seu Período (ex: 7)">
+                </div>
+
+                <button onclick="handleAuth()" id="btn-auth">Conectar</button>
+            </div>
         </div>
 
-        <button onclick="processLogin()" id="btn-login-action">Entrar</button>
-    </div>
+        <div id="view-start" class="app-view">
+            <div class="glass-card">
+                <h2 class="section-title" id="dash-greeting" style="text-align: left;">Olá</h2>
+                <p class="sub-title" id="dash-meta" style="text-align: left; color: var(--accent); font-weight: bold;"></p>
+                <button onclick="startSimulado()">⚡ Iniciar Simulado</button>
+            </div>
+            <div class="glass-card">
+                <h3 style="font-size: 18px; margin-bottom: 5px;">Seu Progresso</h3>
+                <p class="sub-title" style="text-align: left;">Controle a somatória de notas de cada semestre no seu Boletim Pessoal offline.</p>
+            </div>
+        </div>
 
-    <div id="screen-dashboard" class="hidden">
-        <div class="glass-card">
-            <h2 id="txt-welcome">Olá</h2>
-            <p id="txt-meta-info" style="text-align:center; margin-bottom:20px; color:#86868b; font-weight:500;"></p>
+        <div id="view-grades" class="app-view">
+            <div class="glass-card" style="padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-size: 20px;">Boletim</h2>
+                    <button onclick="addNewGradeTrack()" style="width: auto; padding: 8px 15px; font-size: 14px;">+ Matéria</button>
+                </div>
+                <input type="number" id="global-media-min" placeholder="Média mínima (ex: 60)" style="margin-top: 15px; text-align: center;">
+            </div>
+            <div id="grades-tracker-container"></div>
+        </div>
+
+        <div id="view-quiz" class="app-view">
+            <div id="quiz-intro" class="glass-card text-center">
+                <h1 class="section-title">Modo Foco</h1>
+                <p class="sub-title">Nossa IA analisa as questões que você errou anteriormente e puxa do banco de dados para reforçar seu aprendizado.</p>
+                <button onclick="generateQuizParams()">Iniciar Agora</button>
+            </div>
+
+            <div id="quiz-game" class="hidden">
+                <div id="question-area"></div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="btn-secondary" onclick="endQuizEarly()" style="flex: 1;">Sair</button>
+                    <button id="btn-next-q" onclick="loadNextQuestion()" class="hidden" style="flex: 2; background-color: var(--success);">Avançar ➔</button>
+                </div>
+            </div>
+
+            <div id="quiz-result" class="glass-card hidden text-center">
+                <h2 class="section-title">Análise Concluída</h2>
+                <h1 style="font-size: 60px; color: var(--accent); margin: 10px 0;" id="res-score">0/0</h1>
+                <p class="sub-title" id="res-message"></p>
+                <button onclick="resetQuizView()">Refazer Módulo</button>
+            </div>
+        </div>
+
+        <div id="view-collab" class="app-view">
+            <div class="glass-card">
+                <h1 class="section-title">Adicionar ao Banco</h1>
+                <p class="sub-title">Sem links ou palavras inadequadas.</p>
+                
+                <input type="text" id="collab-materia" placeholder="Matéria">
+                <textarea id="collab-pergunta" placeholder="Enunciado..."></textarea>
+                <input type="text" id="collab-opA" placeholder="A)">
+                <input type="text" id="collab-opB" placeholder="B)">
+                <input type="text" id="collab-opC" placeholder="C)">
+                <input type="text" id="collab-opD" placeholder="D)">
+                
+                <select id="collab-correta">
+                    <option value="">Qual a correta?</option>
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                    <option value="2">C</option>
+                    <option value="3">D</option>
+                </select>
+
+                <button onclick="submitCollaboration()" id="btn-collab">Enviar para Nuvem</button>
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="tab-bar hidden" id="main-nav">
+        <a href="#" class="tab-item active" onclick="switchTab(event, 'view-start')"><span class="tab-icon">🏠</span>Início</a>
+        <a href="#" class="tab-item" onclick="switchTab(event, 'view-grades')"><span class="tab-icon">📋</span>Boletim</a>
+        <a href="#" class="tab-item" onclick="switchTab(event, 'view-quiz')"><span class="tab-icon">⚡</span>Simulado</a>
+        <a href="#" class="tab-item" onclick="switchTab(event, 'view-collab')"><span class="tab-icon">➕</span>Contribuir</a>
+    </nav>
+
+    <script>
+        // API SCRIPT (ATUALIZADA)
+        const API_URL = "https://script.google.com/macros/s/AKfycbxjFJ9x1J1SGGGklg05HXji9EhoFfo6uo98a6_u52J-UfTX1OmgRYrWk4IYYF5Ivacgfw/exec";
+
+        let currentUser = null;
+        let quizState = { questions: [], currentIdx: 0, score: 0, weights: {} };
+
+        // GERADOR DE ESTRELAS CSS
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for (let i = 0; i < 70; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.width = `${Math.random() * 3 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                star.style.animationDelay = `${Math.random() * 10}s`;
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+        // INIT
+        window.onload = () => {
+            quizState.weights = JSON.parse(localStorage.getItem('quiz_weights')) || {};
+            const savedZap = localStorage.getItem('user_zap');
+            if(savedZap) { document.getElementById('login-whatsapp').value = savedZap; handleAuth(); }
+            loadGradesFromStorage();
+        };
+
+        async function handleAuth() {
+            const whatsapp = document.getElementById('login-whatsapp').value.trim();
+            const btn = document.getElementById('btn-auth');
+            const regFields = document.getElementById('register-fields');
+
+            if(whatsapp.length < 10) return alert("WhatsApp inválido.");
+            btn.disabled = true; btn.innerText = "Conectando ao servidor...";
+
+            const payload = { action: "login_or_register", whatsapp };
+            if(!regFields.classList.contains('hidden')) {
+                payload.nome = document.getElementById('reg-nome').value.trim();
+                payload.curso = document.getElementById('reg-curso').value.trim();
+                payload.periodo = document.getElementById('reg-periodo').value.trim();
+                if(!payload.nome || !payload.curso) { btn.disabled = false; btn.innerText = "Conectar"; return alert("Preencha tudo."); }
+            }
+
+            try {
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await response.json();
+
+                if(data.status === "success" || data.status === "registered") {
+                    currentUser = data.user;
+                    localStorage.setItem('user_zap', currentUser.whatsapp);
+                    loginSuccess(); // Chama a função que destrói a tela de login
+                } else if (data.status === "not_found") {
+                    regFields.classList.remove('hidden');
+                    btn.disabled = false; btn.innerText = "Finalizar Cadastro";
+                    alert("Número não encontrado no banco. Registre-se abaixo.");
+                }
+            } catch (e) {
+                alert("Erro ao contatar o banco de dados. Verifique a internet.");
+                btn.disabled = false; btn.innerText = "Conectar";
+            }
+        }
+
+        function loginSuccess() {
+            // FIX DO BUG: Força o display none diretamente no elemento para garantir que ele suma
+            const loginView = document.getElementById('view-login');
+            loginView.classList.remove('active');
+            loginView.style.display = 'none'; 
             
-            <button onclick="triggerSimulado()">Responder Simulado do Período</button>
-            <button onclick="changeScreen('screen-calculator')" class="secondary">Calculadora de Médias</button>
-            <button onclick="changeScreen('screen-add-questions')" class="secondary">Colaborar: Enviar Questões</button>
-            <button onclick="viewRanking()" class="secondary">Ver Ranking do Curso</button>
-        </div>
-    </div>
-
-    <div id="screen-calculator" class="glass-card hidden">
-        <h2>Calculadora Acadêmica</h2>
-        <input type="number" id="calc-min-input" placeholder="Qual a média mínima para passar?">
-        <input type="text" id="calc-materia" placeholder="Nome da Disciplina">
-        
-        <div class="grade-row">
-            <input type="number" class="calc-grade" placeholder="Nota Prova">
-            <input type="number" class="calc-grade" placeholder="Nota Trabalho">
-        </div>
-        <div class="grade-row">
-            <input type="number" class="calc-grade" placeholder="Nota Caderno">
-            <input type="number" class="calc-grade" placeholder="Nota AVA">
-        </div>
-        
-        <button onclick="clearGrades()" class="delete-btn">🗑️</button>
-        <button onclick="executeGradeSum()">Calcular Média</button>
-        
-        <h3 id="calc-result" style="margin-top:16px;"></h3>
-        <button class="secondary" onclick="changeScreen('screen-dashboard')" style="margin-top:12px;">Voltar ao Início</button>
-    </div>
-
-    <div id="screen-add-questions" class="glass-card hidden">
-        <h2>Colaborar com o Simulado</h2>
-        <div style="text-align: center;">
-            <span class="counter-badge" id="question-counter-txt">Questões enviadas nesta sessão: 0 / 5</span>
-        </div>
-        
-        <div id="form-question-container">
-            <input type="text" id="q-materia" placeholder="Nome da Matéria (Ex: Cálculo III)">
-            <textarea id="q-pergunta" placeholder="Digite o enunciado da pergunta aqui..."></textarea>
+            document.getElementById('main-nav').classList.remove('hidden');
+            switchTab(null, 'view-start');
             
-            <input type="text" id="q-opA" placeholder="Alternativa A">
-            <input type="text" id="q-opB" placeholder="Alternativa B">
-            <input type="text" id="q-opC" placeholder="Alternativa C">
-            <input type="text" id="q-opD" placeholder="Alternativa D">
+            document.getElementById('dash-greeting').innerText = `E aí, ${currentUser.nome.split(' ')[0]}!`;
+            document.getElementById('dash-meta').innerText = `${currentUser.curso} | Período ${currentUser.periodo}`;
+        }
+
+        function switchTab(event, viewId) {
+            if(event) event.preventDefault();
+            document.querySelectorAll('.app-view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             
-            <select id="q-correct">
-                <option value="">Selecione a Alternativa Correta</option>
-                <option value="A">Alternativa A</option>
-                <option value="B">Alternativa B</option>
-                <option value="C">Alternativa C</option>
-                <option value="D">Alternativa D</option>
-            </select>
+            const target = document.getElementById(viewId);
+            target.style.display = 'block';
+            setTimeout(() => target.classList.add('active'), 10);
             
-            <button onclick="submitQuestionToServer()" id="btn-submit-q">Enviar Pergunta</button>
-        </div>
-        
-        <button class="secondary" onclick="changeScreen('screen-dashboard')" style="margin-top:12px;">Voltar ao Início</button>
-    </div>
+            if(event) event.currentTarget.classList.add('active');
+            else {
+                const navLink = document.querySelector(`[onclick*="${viewId}"]`);
+                if(navLink) navLink.classList.add('active');
+            }
+        }
 
-</div>
+        // BOLETIM (Local Storage)
+        let academicData = { mediaMin: 60, subjects: [] };
 
-<script>
-    // URL gerada na implantação do Apps Script
-    const APPLICATION_API_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+        function loadGradesFromStorage() {
+            const saved = localStorage.getItem('academic_data');
+            if(saved) academicData = JSON.parse(saved);
+            document.getElementById('global-media-min').value = academicData.mediaMin;
+            renderGrades();
+        }
 
-    let sessionUser = {};
-    let questionsSubmittedCount = 0;
+        function saveGradesToStorage() {
+            academicData.mediaMin = parseFloat(document.getElementById('global-media-min').value) || 0;
+            localStorage.setItem('academic_data', JSON.stringify(academicData));
+            renderGrades();
+        }
 
-    function changeScreen(targetScreenId) {
-        const screens = ['screen-login', 'screen-dashboard', 'screen-calculator', 'screen-add-questions'];
-        screens.forEach(id => {
-            document.getElementById(id).classList.add('hidden');
-        });
-        document.getElementById(targetScreenId).classList.remove('hidden');
-    }
+        function addNewGradeTrack() {
+            const name = prompt("Qual o nome da matéria?");
+            if(!name) return;
+            academicData.subjects.push({
+                id: Date.now(), name,
+                b1: {p:0,t:0,c:0,a:0}, b2: {p:0,t:0,c:0,a:0}, b3: {p:0,t:0,c:0,a:0}
+            });
+            saveGradesToStorage();
+        }
 
-    function processLogin() {
-        const whatsapp = document.getElementById('input-whatsapp').value.trim();
-        const regFields = document.getElementById('fields-registration');
-        const btn = document.getElementById('btn-login-action');
+        function deleteSubject(id) {
+            if(!confirm("Apagar esta matéria da memória?")) return;
+            academicData.subjects = academicData.subjects.filter(s => s.id !== id);
+            saveGradesToStorage();
+        }
 
-        if (whatsapp.length < 10) return alert("Por favor, insira um número válido com DDD.");
+        function updateGradeInput(subjectId, bimestre, item, value) {
+            const subject = academicData.subjects.find(s => s.id === subjectId);
+            if(subject) {
+                subject[bimestre][item] = parseFloat(value) || 0;
+                localStorage.setItem('academic_data', JSON.stringify(academicData));
+                updateVisualTotals(subjectId);
+            }
+        }
 
-        btn.disabled = true;
-        btn.innerText = "Verificando...";
+        function renderGrades() {
+            const container = document.getElementById('grades-tracker-container');
+            container.innerHTML = '';
+            const medMin = academicData.mediaMin;
 
-        if (!regFields.classList.contains('hidden')) {
-            // Executa fluxo de cadastro de novo usuário
-            sessionUser = {
-                whatsapp: whatsapp,
-                nome: document.getElementById('input-nome').value.trim(),
-                curso: document.getElementById('input-curso').value.trim(),
-                periodo: document.getElementById('input-periodo').value.trim()
+            academicData.subjects.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'glass-card';
+                card.id = `sub-card-${sub.id}`;
+                
+                const calcTotal = (b) => b.p + b.t + b.c + b.a;
+                const totalGeral = calcTotal(sub.b1) + calcTotal(sub.b2) + calcTotal(sub.b3);
+                
+                let statusHtml = totalGeral >= medMin ? `<span style="color:var(--success)">Aprovado!</span>` : `<span style="color:var(--danger)">Falta ${(medMin - totalGeral).toFixed(1)}</span>`;
+
+                card.innerHTML = `
+                    <div class="materia-header">
+                        <h3 style="font-size: 16px;">${sub.name}</h3>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div class="total-badge" id="total-${sub.id}">${totalGeral.toFixed(1)}</div>
+                            <button class="delete-btn" onclick="deleteSubject(${sub.id})">🗑️</button>
+                        </div>
+                    </div>
+                    <p style="font-size:12px; margin-bottom:15px; margin-top:-5px;">Status: ${statusHtml}</p>
+                    ${renderBimestreInput(sub.id, 'b1', '1º Bim', sub.b1)}
+                    ${renderBimestreInput(sub.id, 'b2', '2º Bim', sub.b2)}
+                    ${renderBimestreInput(sub.id, 'b3', '3º Bim', sub.b3)}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderBimestreInput(subId, bKey, bName, data) {
+            return `
+                <div style="margin-bottom: 15px;">
+                    <div style="font-size:13px; color:var(--text-secondary); margin-bottom:5px;">${bName}</div>
+                    <div class="grade-row">
+                        <input type="number" placeholder="Prova" value="${data.p || ''}" onkeyup="updateGradeInput(${subId}, '${bKey}', 'p', this.value)">
+                        <input type="number" placeholder="Trabal" value="${data.t || ''}" onkeyup="updateGradeInput(${subId}, '${bKey}', 't', this.value)">
+                        <input type="number" placeholder="Cader" value="${data.c || ''}" onkeyup="updateGradeInput(${subId}, '${bKey}', 'c', this.value)">
+                        <input type="number" placeholder="AVA" value="${data.a || ''}" onkeyup="updateGradeInput(${subId}, '${bKey}', 'a', this.value)">
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateVisualTotals(subId) { renderGrades(); } // Simplificado para garantir integridade visual
+
+        // SIMULADO
+        function startSimulado() { switchTab(null, 'view-quiz'); }
+
+        async function generateQuizParams() {
+            const intro = document.getElementById('quiz-intro');
+            const game = document.getElementById('quiz-game');
+            intro.innerHTML = `<h2 class="section-title">Acessando banco...</h2>`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST', body: JSON.stringify({ action: "get_simulado", curso: currentUser.curso, periodo: currentUser.periodo })
+                });
+                const data = await response.json();
+
+                if(data.status === "success" && data.questions.length > 0) {
+                    quizState.questions = data.questions.sort((a, b) => (quizState.weights[b.id] || 0) - (quizState.weights[a.id] || 0));
+                    quizState.currentIdx = 0; quizState.score = 0;
+                    
+                    intro.classList.add('hidden'); game.classList.remove('hidden');
+                    
+                    // IA: Ativa Warp Speed visual nas estrelas
+                    document.body.classList.add('warp-speed');
+                    
+                    renderCurrentQuestion();
+                } else {
+                    intro.innerHTML = `<p class="sub-title">Sem dados no servidor para sua turma. Colabore na aba ao lado!</p>`;
+                }
+            } catch (e) { alert("Erro de rede."); resetQuizView(); }
+        }
+
+        function renderCurrentQuestion() {
+            const area = document.getElementById('question-area');
+            const q = quizState.questions[quizState.currentIdx];
+            document.getElementById('btn-next-q').classList.add('hidden');
+
+            area.innerHTML = `
+                <div class="glass-card">
+                    <div class="q-meta">${q.materia} • Q${quizState.currentIdx + 1}/${quizState.questions.length}</div>
+                    <div class="q-text">${q.pergunta}</div>
+                    <div id="options-group">
+                        <button class="opt-btn" onclick="selectOption(this, 0)">${q.options[0]}</button>
+                        <button class="opt-btn" onclick="selectOption(this, 1)">${q.options[1]}</button>
+                        <button class="opt-btn" onclick="selectOption(this, 2)">${q.options[2]}</button>
+                        <button class="opt-btn" onclick="selectOption(this, 3)">${q.options[3]}</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectOption(btn, optIndex) {
+            const q = quizState.questions[quizState.currentIdx];
+            const group = document.getElementById('options-group');
+            group.style.pointerEvents = 'none';
+            
+            if(optIndex == q.correta) {
+                btn.classList.add('correct'); quizState.score++;
+                if(quizState.weights[q.id] > 0) quizState.weights[q.id]--;
+            } else {
+                btn.classList.add('wrong'); group.children[q.correta].classList.add('correct');
+                quizState.weights[q.id] = (quizState.weights[q.id] || 0) + 1;
+            }
+
+            localStorage.setItem('quiz_weights', JSON.stringify(quizState.weights));
+            
+            const nextBtn = document.getElementById('btn-next-q');
+            nextBtn.classList.remove('hidden');
+            nextBtn.innerText = quizState.currentIdx === quizState.questions.length - 1 ? "Ver Resultado" : "Avançar ➔";
+        }
+
+        function loadNextQuestion() {
+            if(quizState.currentIdx < quizState.questions.length - 1) { quizState.currentIdx++; renderCurrentQuestion(); }
+            else showQuizResult();
+        }
+
+        function showQuizResult() {
+            document.body.classList.remove('warp-speed'); // Desliga Warp Speed
+            document.getElementById('quiz-game').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('res-score').innerText = `${quizState.score}/${quizState.questions.length}`;
+            document.getElementById('res-message').innerText = quizState.score === quizState.questions.length ? "Você destruiu! IA otimizada." : "A IA guardou seus erros para o próximo treino.";
+        }
+
+        function endQuizEarly() { document.body.classList.remove('warp-speed'); resetQuizView(); }
+
+        function resetQuizView() {
+            document.getElementById('quiz-game').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
+            const intro = document.getElementById('quiz-intro');
+            intro.classList.remove('hidden');
+            intro.innerHTML = `<h1 class="section-title">Modo Foco</h1><button onclick="generateQuizParams()">Iniciar Agora</button>`;
+        }
+
+        // COLABORAR
+        async function submitCollaboration() {
+            const btn = document.getElementById('btn-collab');
+            const inputs = {
+                materia: document.getElementById('collab-materia').value.trim(),
+                pergunta: document.getElementById('collab-pergunta').value.trim(),
+                opA: document.getElementById('collab-opA').value.trim(), opB: document.getElementById('collab-opB').value.trim(),
+                opC: document.getElementById('collab-opC').value.trim(), opD: document.getElementById('collab-opD').value.trim(),
+                correta: document.getElementById('collab-correta').value
             };
 
-            if(!sessionUser.nome || !sessionUser.curso || !sessionUser.periodo) {
-                alert("Preencha todos os campos para o cadastro.");
-                btn.disabled = false;
-                btn.innerText = "Entrar";
-                return;
-            }
+            if(Object.values(inputs).some(v => v === "")) return alert("Preencha tudo.");
+            if(/http|www|\.com|porn|sexo|puta/i.test(Object.values(inputs).join(' '))) return alert("Conteúdo bloqueado pelos filtros de segurança.");
 
-            fetch(`${APPLICATION_API_URL}?action=register&whatsapp=${whatsapp}&nome=${encodeURIComponent(sessionUser.nome)}&curso=${encodeURIComponent(sessionUser.curso)}&periodo=${encodeURIComponent(sessionUser.periodo)}`, { method: 'POST' })
-            .then(() => initializeDashboard());
-            return;
+            btn.disabled = true; btn.innerText = "Sincronizando...";
+
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "add_question", ...inputs, curso: currentUser.curso, periodo: currentUser.periodo, autor: currentUser.whatsapp }) });
+                alert("Salvo no banco de dados com sucesso!");
+                ['collab-materia','collab-pergunta','collab-opA','collab-opB','collab-opC','collab-opD','collab-correta'].forEach(id => document.getElementById(id).value = '');
+                switchTab(null, 'view-start');
+            } catch (e) { alert("Falha na rede."); }
+            btn.disabled = false; btn.innerText = "Enviar para Nuvem";
         }
-
-        // Tenta realizar o login direto pelo Whatsapp
-        fetch(`${APPLICATION_API_URL}?action=login&whatsapp=${whatsapp}`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === "success") {
-                sessionUser = { whatsapp, ...data };
-                initializeDashboard();
-            } else {
-                regFields.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerText = "Concluir Cadastro";
-                alert("Cadastro não localizado. Insira seus dados acadêmicos para registrar de forma rápida.");
-            }
-        })
-        .catch(() => {
-            btn.disabled = false;
-            btn.innerText = "Entrar";
-            alert("Erro na conexão com o servidor de dados. Verifique a URL inserida no script.");
-        });
-    }
-
-    function initializeDashboard() {
-        changeScreen('screen-dashboard');
-        document.getElementById('txt-welcome').innerText = `Olá, ${sessionUser.nome}`;
-        document.getElementById('txt-meta-info').innerText = `${sessionUser.curso} — ${sessionUser.periodo}`;
-    }
-
-    // LÓGICA DO CADASTRO DE QUESTÕES (MÁXIMO 5)
-    function submitQuestionToServer() {
-        if (questionsSubmittedCount >= 5) {
-            alert("Limite atingido! Você já cadastrou as 5 perguntas permitidas para esta sessão.");
-            return;
-        }
-
-        const materia = document.getElementById('q-materia').value.trim();
-        const pergunta = document.getElementById('q-pergunta').value.trim();
-        const opA = document.getElementById('q-opA').value.trim();
-        const opB = document.getElementById('q-opB').value.trim();
-        const opC = document.getElementById('q-opC').value.trim();
-        const opD = document.getElementById('q-opD').value.trim();
-        const correta = document.getElementById('q-correct').value;
-        const btn = document.getElementById('btn-submit-q');
-
-        if (!materia || !pergunta || !opA || !opB || !opC || !opD || !correta) {
-            return alert("Preencha todos os dados da questão e selecione a resposta correta.");
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Salvando no Banco...";
-
-        const params = `&curso=${encodeURIComponent(sessionUser.curso)}&periodo=${encodeURIComponent(sessionUser.periodo)}&materia=${encodeURIComponent(materia)}&pergunta=${encodeURIComponent(pergunta)}&opA=${encodeURIComponent(opA)}&opB=${encodeURIComponent(opB)}&opC=${encodeURIComponent(opC)}&opD=${encodeURIComponent(opD)}&correta=${correta}&autor=${encodeURIComponent(sessionUser.whatsapp)}`;
-
-        fetch(`${APPLICATION_API_URL}?action=add_question${params}`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            btn.disabled = false;
-            btn.innerText = "Enviar Pergunta";
-            
-            if(data.status === "success") {
-                questionsSubmittedCount++;
-                document.getElementById('question-counter-txt').innerText = `Questões enviadas nesta sessão: ${questionsSubmittedCount} / 5`;
-                
-                // Limpa os campos para a próxima inserção
-                document.getElementById('q-pergunta').value = "";
-                document.getElementById('q-opA').value = "";
-                document.getElementById('q-opB').value = "";
-                document.getElementById('q-opC').value = "";
-                document.getElementById('q-opD').value = "";
-                document.getElementById('q-correct').value = "";
-                
-                alert("Questão integrada com sucesso ao banco do Simulado!");
-
-                if (questionsSubmittedCount === 5) {
-                    document.getElementById('form-question-container').classList.add('hidden');
-                    alert("Você atingiu o limite máximo de 5 envios. Obrigado por colaborar!");
-                }
-            }
-        })
-        .catch(() => {
-            btn.disabled = false;
-            btn.innerText = "Enviar Pergunta";
-            alert("Erro ao tentar salvar a pergunta.");
-        });
-    }
-
-    // CALCULADORA DE NOTAS
-    function clearGrades() {
-        document.querySelectorAll('.calc-grade').forEach(i => i.value = '');
-        document.getElementById('calc-result').innerText = '';
-    }
-
-    function executeGradeSum() {
-        const minRequired = parseFloat(document.getElementById('calc-min-input').value);
-        let totalSum = 0;
-        
-        document.querySelectorAll('.calc-grade').forEach(i => {
-            if(i.value) totalSum += parseFloat(i.value);
-        });
-
-        const display = document.getElementById('calc-result');
-        if (isNaN(minRequired)) return alert("Por favor, digite qual a média mínima necessária.");
-
-        if (totalSum >= minRequired) {
-            display.innerHTML = `<span style="color: var(--success);">Aprovado! Soma Atual: ${totalSum} pontos.</span>`;
-        } else {
-            const difference = (minRequired - totalSum).toFixed(1);
-            display.innerHTML = `<span style="color: var(--danger);">Faltam ${difference} pontos para atingir a média. Total: ${totalSum}</span>`;
-        }
-    }
-
-    function triggerSimulado() {
-        alert("Puxando simulado específico do seu período diretamente do Google Sheets...");
-    }
-
-    function viewRanking() {
-        alert("Acessando aba de Ranking Geral de acertos por curso...");
-    }
-</script>
-
+    </script>
 </body>
 </html>
