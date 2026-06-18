@@ -7,18 +7,19 @@
     <style>
         :root {
             --bg-color: #f5f5f7;
-            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(255, 255, 255, 0.85);
             --text-main: #1d1d1f;
             --accent: #0071e3;
             --accent-hover: #0077ed;
             --danger: #ff3b30;
+            --success: #34c759;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         
         body { background-color: var(--bg-color); color: var(--text-main); -webkit-font-smoothing: antialiased; }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
         .glass-card {
             background: var(--card-bg);
@@ -27,35 +28,42 @@
             border-radius: 18px;
             padding: 24px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
-        input, select, button {
+        input, select, button, textarea {
             width: 100%; padding: 14px; margin-bottom: 12px;
             border-radius: 12px; border: 1px solid #d2d2d7;
-            font-size: 16px; outline: none;
+            font-size: 16px; outline: none; background: #fff;
         }
+
+        textarea { height: 80px; resize: none; }
         
         button {
             background-color: var(--accent); color: white; border: none; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        button:active { transform: scale(0.98); }
+        button:aria-disabled, button:disabled { background-color: #a2a2a7; cursor: not-allowed; }
+        button:active:not(:disabled) { transform: scale(0.98); }
         button.secondary { background-color: #e8e8ed; color: var(--text-main); }
 
-        h1, h2 { font-weight: 600; margin-bottom: 16px; text-align: center; }
+        h1, h2, h3 { font-weight: 600; margin-bottom: 16px; text-align: center; }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
-        /* Anúncio */
-        .ad-container { display: block; text-align: center; margin: 20px 0; }
+        /* Banner Rotativo / Piscante */
+        .ad-container { display: block; text-align: center; margin-bottom: 16px; }
         .ad-banner {
-            width: 100%; border-radius: 12px; animation: pulse 2s infinite; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%; border-radius: 14px; animation: blink-animation 1.5s infinite; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes blink-animation { 0% { opacity: 1; } 50% { opacity: 0.75; } 100% { opacity: 1; } }
 
-        /* Calculadora de Notas */
-        .grade-row { display: flex; gap: 10px; align-items: center; }
-        .delete-btn { width: 40px; background-color: var(--danger); font-size: 20px; padding: 10px; display: flex; justify-content: center; align-items: center;}
+        /* Grid de Notas */
+        .grade-row { display: flex; gap: 10px; }
+        .delete-btn { background-color: var(--danger); font-size: 18px; padding: 12px; width: fit-content; margin: 0 auto 12px auto; display: block; border-radius: 50%; }
+
+        .counter-badge {
+            background: #e8e8ed; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -63,153 +71,249 @@
 <div class="container">
     
     <a href="https://junim887876.github.io/urban_acai" target="_blank" class="ad-container">
-        <img src="anuncio.jpg" alt="Patrocínio" class="ad-banner">
+        <img src="anuncio.jpg" alt="Anúncio" class="ad-banner">
     </a>
 
-    <div id="login-screen" class="glass-card">
+    <div id="screen-login" class="glass-card">
         <h1>Acesso Rápido</h1>
-        <p style="text-align:center; margin-bottom:20px; color:#86868b;">Digite seu WhatsApp para entrar</p>
-        <input type="tel" id="whatsapp-input" placeholder="Ex: 62999999999" maxlength="11">
+        <p style="text-align:center; margin-bottom:20px; color:#86868b;">Informe seu WhatsApp para entrar no seu ambiente de curso</p>
+        <input type="tel" id="input-whatsapp" placeholder="WhatsApp (Ex: 62999999999)" maxlength="11">
         
-        <div id="register-fields" class="hidden">
-            <input type="text" id="nome-input" placeholder="Seu Nome">
-            <input type="text" id="curso-input" placeholder="Ex: Engenharia Mecânica">
-            <input type="text" id="periodo-input" placeholder="Ex: 5º Período">
+        <div id="fields-registration" class="hidden">
+            <input type="text" id="input-nome" placeholder="Seu Nome Completo">
+            <input type="text" id="input-curso" placeholder="Nome do Curso (Ex: Engenharia Mecânica)">
+            <input type="text" id="input-periodo" placeholder="Período Atual (Ex: 5º Período)">
         </div>
 
-        <button onclick="handleLogin()" id="btn-login">Entrar</button>
+        <button onclick="processLogin()" id="btn-login-action">Entrar</button>
     </div>
 
-    <div id="dashboard-screen" class="hidden">
+    <div id="screen-dashboard" class="hidden">
         <div class="glass-card">
-            <h2 id="user-greeting">Olá, Aluno</h2>
-            <p id="user-course-info" style="text-align:center; margin-bottom:20px; font-weight: 500;"></p>
-            <button onclick="openSimulado()">Iniciar Simulado Adaptativo</button>
-            <button class="secondary" onclick="openCalculadora()">Calculadora de Notas</button>
-            <button class="secondary" onclick="openRanking()">Ranking da Turma</button>
+            <h2 id="txt-welcome">Olá</h2>
+            <p id="txt-meta-info" style="text-align:center; margin-bottom:20px; color:#86868b; font-weight:500;"></p>
+            
+            <button onclick="triggerSimulado()">Responder Simulado do Período</button>
+            <button onclick="changeScreen('screen-calculator')" class="secondary">Calculadora de Médias</button>
+            <button onclick="changeScreen('screen-add-questions')" class="secondary">Colaborar: Enviar Questões</button>
+            <button onclick="viewRanking()" class="secondary">Ver Ranking do Curso</button>
         </div>
     </div>
 
-    <div id="calculadora-screen" class="glass-card hidden">
-        <h2>Calculadora de Notas</h2>
-        <input type="number" id="media-minima" placeholder="Média mínima para aprovação (ex: 60)">
-        <input type="text" id="materia-nome" placeholder="Nome da Matéria">
+    <div id="screen-calculator" class="glass-card hidden">
+        <h2>Calculadora Acadêmica</h2>
+        <input type="number" id="calc-min-input" placeholder="Qual a média mínima para passar?">
+        <input type="text" id="calc-materia" placeholder="Nome da Disciplina">
         
-        <div id="grades-container">
-            <div class="grade-row">
-                <input type="number" class="grade-input" placeholder="Nota Prova">
-                <input type="number" class="grade-input" placeholder="Nota Trabalho">
-            </div>
-            <div class="grade-row">
-                <input type="number" class="grade-input" placeholder="Nota Caderno">
-                <input type="number" class="grade-input" placeholder="Nota AVA">
-            </div>
+        <div class="grade-row">
+            <input type="number" class="calc-grade" placeholder="Nota Prova">
+            <input type="number" class="calc-grade" placeholder="Nota Trabalho">
+        </div>
+        <div class="grade-row">
+            <input type="number" class="calc-grade" placeholder="Nota Caderno">
+            <input type="number" class="calc-grade" placeholder="Nota AVA">
         </div>
         
-        <button onclick="limparNotas()" class="delete-btn">🗑️</button>
-        <button onclick="calcularMedia()">Calcular</button>
+        <button onclick="clearGrades()" class="delete-btn">🗑️</button>
+        <button onclick="executeGradeSum()">Calcular Média</button>
         
-        <h3 id="resultado-notas" style="margin-top:20px; text-align:center;"></h3>
-        <button class="secondary" onclick="voltarDashboard()" style="margin-top:10px;">Voltar</button>
+        <h3 id="calc-result" style="margin-top:16px;"></h3>
+        <button class="secondary" onclick="changeScreen('screen-dashboard')" style="margin-top:12px;">Voltar ao Início</button>
+    </div>
+
+    <div id="screen-add-questions" class="glass-card hidden">
+        <h2>Colaborar com o Simulado</h2>
+        <div style="text-align: center;">
+            <span class="counter-badge" id="question-counter-txt">Questões enviadas nesta sessão: 0 / 5</span>
+        </div>
+        
+        <div id="form-question-container">
+            <input type="text" id="q-materia" placeholder="Nome da Matéria (Ex: Cálculo III)">
+            <textarea id="q-pergunta" placeholder="Digite o enunciado da pergunta aqui..."></textarea>
+            
+            <input type="text" id="q-opA" placeholder="Alternativa A">
+            <input type="text" id="q-opB" placeholder="Alternativa B">
+            <input type="text" id="q-opC" placeholder="Alternativa C">
+            <input type="text" id="q-opD" placeholder="Alternativa D">
+            
+            <select id="q-correct">
+                <option value="">Selecione a Alternativa Correta</option>
+                <option value="A">Alternativa A</option>
+                <option value="B">Alternativa B</option>
+                <option value="C">Alternativa C</option>
+                <option value="D">Alternativa D</option>
+            </select>
+            
+            <button onclick="submitQuestionToServer()" id="btn-submit-q">Enviar Pergunta</button>
+        </div>
+        
+        <button class="secondary" onclick="changeScreen('screen-dashboard')" style="margin-top:12px;">Voltar ao Início</button>
     </div>
 
 </div>
 
 <script>
-    // URL DO SEU GOOGLE APPS SCRIPT (Cole a URL gerada no passo 11 aqui dentro das aspas)
-    const API_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+    // URL gerada na implantação do Apps Script
+    const APPLICATION_API_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
 
-    let currentUser = {};
+    let sessionUser = {};
+    let questionsSubmittedCount = 0;
 
-    function handleLogin() {
-        const zap = document.getElementById('whatsapp-input').value;
-        const registerFields = document.getElementById('register-fields');
-        const btn = document.getElementById('btn-login');
+    function changeScreen(targetScreenId) {
+        const screens = ['screen-login', 'screen-dashboard', 'screen-calculator', 'screen-add-questions'];
+        screens.forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(targetScreenId).classList.remove('hidden');
+    }
 
-        if(zap.length < 10) return alert("Digite um WhatsApp válido.");
+    function processLogin() {
+        const whatsapp = document.getElementById('input-whatsapp').value.trim();
+        const regFields = document.getElementById('fields-registration');
+        const btn = document.getElementById('btn-login-action');
 
-        btn.innerText = "Carregando...";
+        if (whatsapp.length < 10) return alert("Por favor, insira um número válido com DDD.");
 
-        // Se os campos de registro estão visíveis, fazemos o cadastro
-        if (!registerFields.classList.contains('hidden')) {
-            currentUser = {
-                whatsapp: zap,
-                nome: document.getElementById('nome-input').value,
-                curso: document.getElementById('curso-input').value,
-                periodo: document.getElementById('periodo-input').value
+        btn.disabled = true;
+        btn.innerText = "Verificando...";
+
+        if (!regFields.classList.contains('hidden')) {
+            // Executa fluxo de cadastro de novo usuário
+            sessionUser = {
+                whatsapp: whatsapp,
+                nome: document.getElementById('input-nome').value.trim(),
+                curso: document.getElementById('input-curso').value.trim(),
+                periodo: document.getElementById('input-periodo').value.trim()
             };
-            
-            fetch(`${API_URL}?action=register&whatsapp=${zap}&nome=${currentUser.nome}&curso=${currentUser.curso}&periodo=${currentUser.periodo}`, { method: 'POST' })
-            .then(() => loadDashboard());
+
+            if(!sessionUser.nome || !sessionUser.curso || !sessionUser.periodo) {
+                alert("Preencha todos os campos para o cadastro.");
+                btn.disabled = false;
+                btn.innerText = "Entrar";
+                return;
+            }
+
+            fetch(`${APPLICATION_API_URL}?action=register&whatsapp=${whatsapp}&nome=${encodeURIComponent(sessionUser.nome)}&curso=${encodeURIComponent(sessionUser.curso)}&periodo=${encodeURIComponent(sessionUser.periodo)}`, { method: 'POST' })
+            .then(() => initializeDashboard());
             return;
         }
 
-        // Tenta fazer o login
-        fetch(`${API_URL}?action=login&whatsapp=${zap}`, { method: 'POST' })
+        // Tenta realizar o login direto pelo Whatsapp
+        fetch(`${APPLICATION_API_URL}?action=login&whatsapp=${whatsapp}`, { method: 'POST' })
         .then(res => res.json())
         .then(data => {
-            if(data.status === "success") {
-                currentUser = data;
-                loadDashboard();
+            if (data.status === "success") {
+                sessionUser = { whatsapp, ...data };
+                initializeDashboard();
             } else {
-                // Usuário não encontrado, mostra campos para cadastro
-                registerFields.classList.remove('hidden');
-                btn.innerText = "Finalizar Cadastro";
-                alert("Número não encontrado. Complete seu cadastro rápido.");
+                regFields.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = "Concluir Cadastro";
+                alert("Cadastro não localizado. Insira seus dados acadêmicos para registrar de forma rápida.");
             }
-        }).catch(() => {
+        })
+        .catch(() => {
+            btn.disabled = false;
             btn.innerText = "Entrar";
-            alert("Erro de conexão. Verifique o link do Apps Script.");
+            alert("Erro na conexão com o servidor de dados. Verifique a URL inserida no script.");
         });
     }
 
-    function loadDashboard() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('dashboard-screen').classList.remove('hidden');
-        document.getElementById('user-greeting').innerText = `Olá, ${currentUser.nome}`;
-        document.getElementById('user-course-info').innerText = `${currentUser.curso} - ${currentUser.periodo}`;
+    function initializeDashboard() {
+        changeScreen('screen-dashboard');
+        document.getElementById('txt-welcome').innerText = `Olá, ${sessionUser.nome}`;
+        document.getElementById('txt-meta-info').innerText = `${sessionUser.curso} — ${sessionUser.periodo}`;
     }
 
-    function openCalculadora() {
-        document.getElementById('dashboard-screen').classList.add('hidden');
-        document.getElementById('calculadora-screen').classList.remove('hidden');
+    // LÓGICA DO CADASTRO DE QUESTÕES (MÁXIMO 5)
+    function submitQuestionToServer() {
+        if (questionsSubmittedCount >= 5) {
+            alert("Limite atingido! Você já cadastrou as 5 perguntas permitidas para esta sessão.");
+            return;
+        }
+
+        const materia = document.getElementById('q-materia').value.trim();
+        const pergunta = document.getElementById('q-pergunta').value.trim();
+        const opA = document.getElementById('q-opA').value.trim();
+        const opB = document.getElementById('q-opB').value.trim();
+        const opC = document.getElementById('q-opC').value.trim();
+        const opD = document.getElementById('q-opD').value.trim();
+        const correta = document.getElementById('q-correct').value;
+        const btn = document.getElementById('btn-submit-q');
+
+        if (!materia || !pergunta || !opA || !opB || !opC || !opD || !correta) {
+            return alert("Preencha todos os dados da questão e selecione a resposta correta.");
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Salvando no Banco...";
+
+        const params = `&curso=${encodeURIComponent(sessionUser.curso)}&periodo=${encodeURIComponent(sessionUser.periodo)}&materia=${encodeURIComponent(materia)}&pergunta=${encodeURIComponent(pergunta)}&opA=${encodeURIComponent(opA)}&opB=${encodeURIComponent(opB)}&opC=${encodeURIComponent(opC)}&opD=${encodeURIComponent(opD)}&correta=${correta}&autor=${encodeURIComponent(sessionUser.whatsapp)}`;
+
+        fetch(`${APPLICATION_API_URL}?action=add_question${params}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = "Enviar Pergunta";
+            
+            if(data.status === "success") {
+                questionsSubmittedCount++;
+                document.getElementById('question-counter-txt').innerText = `Questões enviadas nesta sessão: ${questionsSubmittedCount} / 5`;
+                
+                // Limpa os campos para a próxima inserção
+                document.getElementById('q-pergunta').value = "";
+                document.getElementById('q-opA').value = "";
+                document.getElementById('q-opB').value = "";
+                document.getElementById('q-opC').value = "";
+                document.getElementById('q-opD').value = "";
+                document.getElementById('q-correct').value = "";
+                
+                alert("Questão integrada com sucesso ao banco do Simulado!");
+
+                if (questionsSubmittedCount === 5) {
+                    document.getElementById('form-question-container').classList.add('hidden');
+                    alert("Você atingiu o limite máximo de 5 envios. Obrigado por colaborar!");
+                }
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerText = "Enviar Pergunta";
+            alert("Erro ao tentar salvar a pergunta.");
+        });
     }
 
-    function voltarDashboard() {
-        document.getElementById('calculadora-screen').classList.add('hidden');
-        document.getElementById('dashboard-screen').classList.remove('hidden');
+    // CALCULADORA DE NOTAS
+    function clearGrades() {
+        document.querySelectorAll('.calc-grade').forEach(i => i.value = '');
+        document.getElementById('calc-result').innerText = '';
     }
 
-    function limparNotas() {
-        document.querySelectorAll('.grade-input').forEach(input => input.value = '');
-        document.getElementById('resultado-notas').innerText = '';
-    }
-
-    function calcularMedia() {
-        const mediaMinima = parseFloat(document.getElementById('media-minima').value);
-        let soma = 0;
-        document.querySelectorAll('.grade-input').forEach(input => {
-            if(input.value) soma += parseFloat(input.value);
+    function executeGradeSum() {
+        const minRequired = parseFloat(document.getElementById('calc-min-input').value);
+        let totalSum = 0;
+        
+        document.querySelectorAll('.calc-grade').forEach(i => {
+            if(i.value) totalSum += parseFloat(i.value);
         });
 
-        const resultadoMsg = document.getElementById('resultado-notas');
-        if (isNaN(mediaMinima)) return alert("Defina a média mínima!");
+        const display = document.getElementById('calc-result');
+        if (isNaN(minRequired)) return alert("Por favor, digite qual a média mínima necessária.");
 
-        if (soma >= mediaMinima) {
-            resultadoMsg.innerHTML = `<span style="color: #34c759;">Aprovado! Você conseguiu ${soma} pontos.</span>`;
+        if (totalSum >= minRequired) {
+            display.innerHTML = `<span style="color: var(--success);">Aprovado! Soma Atual: ${totalSum} pontos.</span>`;
         } else {
-            const falta = (mediaMinima - soma).toFixed(1);
-            resultadoMsg.innerHTML = `<span style="color: var(--danger);">Faltam ${falta} pontos para atingir a média. Total atual: ${soma}</span>`;
+            const difference = (minRequired - totalSum).toFixed(1);
+            display.innerHTML = `<span style="color: var(--danger);">Faltam ${difference} pontos para atingir a média. Total: ${totalSum}</span>`;
         }
     }
 
-    function openSimulado() {
-        alert("O algoritmo adaptativo analisará seus erros anteriores armazenados no Cache local do navegador e puxará do Google Sheets as questões que você tem mais dificuldade.");
-        // A lógica do simulado seria instanciada aqui.
+    function triggerSimulado() {
+        alert("Puxando simulado específico do seu período diretamente do Google Sheets...");
     }
-    
-    function openRanking() {
-        alert(`Buscando ranking dos alunos do ${currentUser.periodo} de ${currentUser.curso}...`);
+
+    function viewRanking() {
+        alert("Acessando aba de Ranking Geral de acertos por curso...");
     }
 </script>
 
